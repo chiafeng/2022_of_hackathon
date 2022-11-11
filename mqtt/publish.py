@@ -3,7 +3,7 @@ import time, json
 
 client = paho.Client(client_id="test", clean_session=False)
 
-def publish(data):
+def publish(data, topic):
   global client
   # client.on_publish = on_publish
   client.connect('broker.mqttdashboard.com', 1883)
@@ -11,5 +11,5 @@ def publish(data):
 
   while True:
     msg = json.dumps({"count": data})
-    client.publish('openfind123', msg)
+    client.publish(topic, msg)
     time.sleep(1)

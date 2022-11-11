@@ -6,32 +6,40 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 
 from mqtt.subscribe import subscribe
 
-realData = 0
+realData = {
+  "openfind1": -1,
+  "openfind2": -1
+}
+name2Id = {
+  "會議室1": "openfind1",
+  "會議室 2": "openfind2"
+
+}
 app = Flask(__name__)
 
 def on_message(client, userdata, msg):
   global realData
-  realData = int(json.loads(msg.payload)["count"])
+  realData[msg.topic] = int(json.loads(msg.payload)["count"])
 
 subscribe(on_message)
 
-params = {'access_token': 'rxc1SitGNuKaI05F0HzbnzdKpk0V5I2bfUvBOkxr7AFaOMxGAGjEqlMS8jBZv6QW'}
-headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Cookie': 'key=$AD820FA84E9A1341.allen_lin@openfind.com.tw:allen_lin@openfind.com.tw:mail.office.openfind.com.tw:tw'
-          }
-payload = {"roomId" : "6368c1606655b600d0f0a055", "text" : "炸 MM bug"}
-resp = requests.post(
-  'https://im.office.openfind.com.tw/api/messages',
-  params=params,
-  headers=headers,
-  data=json.dumps(payload)
-)
-
-if not resp.status_code == requests.codes.ok:
-  print("error")
-print(resp.text)
+# params = {'access_token': 'rxc1SitGNuKaI05F0HzbnzdKpk0V5I2bfUvBOkxr7AFaOMxGAGjEqlMS8jBZv6QW'}
+# headers = {
+#             'Accept': 'application/json',
+#             'Content-Type': 'application/json',
+#             'Cookie': 'key=$AD820FA84E9A1341.allen_lin@openfind.com.tw:allen_lin@openfind.com.tw:mail.office.openfind.com.tw:tw'
+#           }
+# payload = {"roomId" : "6368c1606655b600d0f0a055", "text" : "炸 MM bug"}
+# resp = requests.post(
+#   'https://im.office.openfind.com.tw/api/messages',
+#   params=params,
+#   headers=headers,
+#   data=json.dumps(payload)
+# )
+# 
+# if not resp.status_code == requests.codes.ok:
+#   print("error")
+# print(resp.text)
 
 # LINE 聊天機器人的基本資料
 line_bot_api = LineBotApi('Xc2Ui6jPpHVp/orCMScKkasA570xU879/OesMq4lEGersiKpn1mVovJwn0HKZUdTMhup60m7eqfpTWUoZBiRqPz6ecWHSN4ynFjIFk9UTnUtgIxNnEGhXlEIaCR8iuGLX1GLau3Sa+bynDrS9kSQbgdB04t89/1O/w1cDnyilFU=')
@@ -73,10 +81,13 @@ def echo(event):
     )
 
 def rooms():
-  return "．陽明山\n．富士山\n．太平洋"
+  print(type(list(name2Id.values())))
+  def core(v):
+    return "．"+v
+  return "\n".join(list(map(core, list(name2Id.keys()))))
 
 def check(roomName=None):
-  return f'{roomName}現在{"有人" if realData > 0 else "沒有人"}喔'
+  return f'{roomName}現在{"有人" if realData[name2Id[roomName]] > 0 else "沒有人"}喔'
 
 if __name__ == "__main__":
   app.run()
